@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0c0a1c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>BiteBudget - Student Canteen Tracker</title>
+  
+  <!-- Web App Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.png" type="image/png">
+  
+  <!-- Google Fonts: Outfit for sleek tech feel, Inter for clean copy -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- App Shell -->
+  <div class="app-container">
+    
+    <!-- Top Status Bar & Wallet Card -->
+    <header class="app-header">
+      <div class="logo-area">
+        <span class="logo-emoji">🥟</span>
+        <div class="brand-text">
+          <h1>BiteBudget</h1>
+          <span class="sub-text">Smart Canteen Tracker</span>
+        </div>
+      </div>
+      
+      <!-- NFC Style Student Card -->
+      <div class="student-card" id="studentCard">
+        <div class="card-bg-glow"></div>
+        <div class="card-header">
+          <span class="card-title">CANTEEN PASS</span>
+          <span class="card-chip"></span>
+        </div>
+        <div class="card-body">
+          <div class="card-balance-label">Simulated Card Balance</div>
+          <div class="card-balance-value" id="cardBalanceValue">₹450.00</div>
+        </div>
+        <div class="card-footer">
+          <span class="student-name">M. A. Student</span>
+          <span class="card-status">Active RFID</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN VIEWPORT CONTENT (Dynamically toggled tabs) -->
+    <main class="app-content">
+
+      <!-- ================= TAB 1: DASHBOARD ================= -->
+      <section id="tab-dashboard" class="tab-view active">
+        <!-- Budget Dial Section -->
+        <div class="budget-ring-container">
+          <div class="glass-dial-wrapper">
+            <svg class="progress-ring" width="220" height="220">
+              <defs>
+                <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#ec4899" /> <!-- Pink Glow -->
+                  <stop offset="50%" stop-color="#8b5cf6" /> <!-- Violet Glow -->
+                  <stop offset="100%" stop-color="#06b6d4" /> <!-- Cyan Glow -->
+                </linearGradient>
+              </defs>
+              <circle class="progress-ring__bg" stroke="rgba(255,255,255,0.06)" stroke-width="14" fill="transparent" r="92" cx="110" cy="110" />
+              <circle class="progress-ring__bar" stroke="url(#ringGradient)" stroke-width="14" stroke-linecap="round" fill="transparent" r="92" cx="110" cy="110" />
+            </svg>
+            <div class="dial-content">
+              <span class="dial-label">Today's Spend</span>
+              <span class="dial-spent" id="dialSpent">₹0.00</span>
+              <span class="dial-limit" id="dialLimit">of ₹250.00</span>
+            </div>
+          </div>
+          <div class="dial-motivational-text" id="dialMotivation">Tasty spending inside your budget limits! 🚀</div>
+        </div>
+
+        <!-- Standalone Scan & Pay Action Card -->
+        <div class="glass-card border-cyan" style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:linear-gradient(135deg, rgba(0, 240, 255, 0.12), rgba(139, 92, 246, 0.04)); margin-bottom: 20px; cursor:pointer;" id="directScanPayCard">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span style="font-size:24px; filter:drop-shadow(0 0 8px var(--neon-cyan));">📷</span>
+            <div style="text-align:left;">
+              <h4 style="font-family:var(--font-display); font-weight:800; color:#fff; font-size:14px; letter-spacing:0.5px;">RAPID SCAN & PAY</h4>
+              <span style="font-size:11px; color:var(--text-muted);">Scan counter QR code to pay instantly</span>
+            </div>
+          </div>
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--neon-cyan)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 4px var(--neon-cyan));"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </div>
+
+        <!-- Quick Log Counter Presets -->
+        <div class="presets-section">
+          <div class="section-header">
+            <h3>Quick Counter Taps</h3>
+            <span class="hint-text">Instant 1-Tap Log</span>
+          </div>
+          
+          <div class="presets-grid" id="presetsGrid">
+            <!-- Dynamically populated in app.js -->
+          </div>
+          
+          <button class="custom-add-btn" id="openCustomLoggerBtn">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Custom Entry
+          </button>
+        </div>
+
+        <!-- Recent Mini Ledger -->
+        <div class="ledger-section">
+          <div class="section-header">
+            <h3>Canteen Log</h3>
+            <button class="clear-log-btn" id="viewAllLogsLink">View All</button>
+          </div>
+          <div class="ledger-list" id="miniLedgerList">
+            <!-- Dynamically populated -->
+            <div class="empty-state">
+              <p>No transactions today. Canteen is waiting! 🥪</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 2: ANALYTICS ================= -->
+      <section id="tab-analytics" class="tab-view">
+        <div class="glass-card header-card">
+          <h2>Spend Insights</h2>
+          <p>Where are the daily coins rolling to?</p>
+        </div>
+
+        <!-- Stats Grid Cards -->
+        <div class="stats-grid">
+          <div class="stat-card glass-card border-purple">
+            <span class="stat-label">Total Month Spend</span>
+            <span class="stat-value" id="monthTotalSpend">₹1,240.00</span>
+          </div>
+          <div class="stat-card glass-card border-cyan">
+            <span class="stat-label">Most Ordered Item</span>
+            <span class="stat-value" id="frequentItem">☕ Chai</span>
+          </div>
+        </div>
+
+        <!-- Dynamic Chart Widget -->
+        <div class="glass-card chart-container">
+          <div class="chart-header">
+            <h3>Last 7 Days Spend</h3>
+            <span class="chart-sub" id="weeklyTotal">Total: ₹380.00</span>
+          </div>
+          <!-- Custom SVG Responsive Bar Chart -->
+          <div class="svg-chart-wrapper" id="barChartWrapper">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+
+        <!-- Category Distribution Progress Bars -->
+        <div class="glass-card category-breakdown">
+          <h3>Breakdown by Canteen Stall</h3>
+          <div class="category-list" id="categoryBarsList">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 3: PARENT REPORT ================= -->
+      <section id="tab-report" class="tab-view">
+        <div class="glass-card header-card border-pink">
+          <h2>No-Panic parent Summary</h2>
+          <p>Explain your month's micro-spendings easily and keep them happy.</p>
+        </div>
+
+        <div class="glass-card report-builder-card">
+          <div class="report-seal">📋</div>
+          
+          <div class="parent-card-header">
+            <div class="card-circle"></div>
+            <div class="card-dots">•••</div>
+          </div>
+          
+          <div class="parent-report-content" id="parentReportContainer">
+            <!-- Compiled dynamic report copy -->
+            <h4 class="report-title">OFFICIAL CANTEEN LEDGER</h4>
+            <div class="report-divider"></div>
+            <p class="report-intro">Dear Mom & Dad,</p>
+            <p class="report-body">
+              Here is my canteen spending summary. This month I kept it sensible and tracked everything carefully:
+            </p>
+            <ul class="report-stats">
+              <li>🥗 Meals & Lunch: <strong>₹620 (50%)</strong></li>
+              <li>☕ Caffeine & Focus: <strong>₹248 (20%)</strong></li>
+              <li>🥟 Quick Snacks: <strong>₹372 (30%)</strong></li>
+            </ul>
+            <p class="report-summary">
+              In total, I spent <strong>₹1,240</strong>, average <strong>₹41.30 per day</strong>. I've stayed well within safe margins!
+            </p>
+            <div class="report-stamp">VERIFIED BY BITEBUDGET</div>
+          </div>
+          
+          <!-- Actions for sharing -->
+          <div class="report-actions">
+            <button class="action-btn whatsapp-btn" id="shareWhatsAppBtn">
+              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="action-svg-icon"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+              Share WhatsApp
+            </button>
+            <button class="action-btn copy-btn" id="copyReportBtn">
+              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="action-svg-icon"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Copy Text
+            </button>
+          </div>
+        </div>
+
+        <div class="parent-pro-tip">
+          💡 <strong>Pro-Tip:</strong> Parents appreciate honesty and accountability. Tapping "Copy Text" compiles an formatted chat message describing exactly why you spent what you spent.
+        </div>
+      </section>
+
+      <!-- ================= TAB 4: SETTINGS ================= -->
+      <section id="tab-settings" class="tab-view">
+        <!-- Settings Form -->
+        <div class="glass-card">
+          <h3>Budget Setup</h3>
+          <div class="form-group">
+            <label for="inputDailyLimit">Daily Spend Limit (Default)</label>
+            <div class="input-wrapper">
+              <span class="currency-prefix" id="dailyLimitPrefix">₹</span>
+              <input type="number" id="inputDailyLimit" value="250" min="10" max="10000">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputCanteenCard">Mock Canteen RFID Balance</label>
+            <div class="input-wrapper">
+              <span class="currency-prefix" id="canteenCardPrefix">₹</span>
+              <input type="number" id="inputCanteenCard" value="450" min="0" max="25000">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputCurrency">Currency Symbol</label>
+            <select id="inputCurrency">
+              <option value="₹">₹ (INR - Rupees)</option>
+              <option value="$">$ (USD - Dollars)</option>
+              <option value="€">€ (EUR - Euros)</option>
+              <option value="£">£ (GBP - Pounds)</option>
+              <option value="¥">¥ (JPY - Yen)</option>
+            </select>
+          </div>
+          <button class="save-settings-btn" id="saveSettingsBtn">Apply Limits</button>
+        </div>
+
+        <!-- NEW: SMS ALERT GATEWAY CONFIGURATION -->
+        <div class="glass-card border-pink">
+          <h3>SMS Alerts & Guardian Sync</h3>
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">
+            Set up automatic text alerts to be fired to your guardian, parent, or bank alert system on budget breaches.
+          </p>
+          <div class="form-group">
+            <label for="inputAlertName">Guardian / Recipient Name</label>
+            <div class="input-wrapper" style="padding-left:0;">
+              <input type="text" id="inputAlertName" value="Mom & Dad" placeholder="Name" style="padding-left:14px;">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputAlertPhone">Recipient Mobile / Phone Number</label>
+            <div class="input-wrapper" style="padding-left:0;">
+              <input type="tel" id="inputAlertPhone" value="+91 98765 43210" placeholder="+91 XXXXX XXXXX" style="padding-left:14px;">
+            </div>
+          </div>
+          <div class="form-group" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label for="inputAlertBankName">Alerting Bank Name</label>
+              <input type="text" id="inputAlertBankName" value="State Bank of India" placeholder="Bank Name" style="width:100%; background:rgba(7,5,20,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px; color:#fff; font-size:13px;">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label for="inputAlertBankAcct">Bank Account Number</label>
+              <input type="text" id="inputAlertBankAcct" value="A/C **9314" placeholder="A/C details" style="width:100%; background:rgba(7,5,20,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px; color:#fff; font-size:13px;">
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:10px;">
+            <label for="inputSmsTemplate">Custom SMS Alert Template</label>
+            <textarea id="inputSmsTemplate" style="width:100%; background:rgba(7,5,20,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px; color:#fff; font-size:12px; height:80px; font-family:var(--font-body); resize:none;">ALERT from {bank} ({acct}): {name}, I have exceeded my daily budget limit at the canteen. Spent: {spent} / Limit: {limit}.</textarea>
+          </div>
+          <div class="form-group" style="display:flex; align-items:center; justify-content:space-between; margin-top:10px;">
+            <label for="toggleSmsActive" style="margin-bottom:0; cursor:pointer;">Auto-Trigger SMS App</label>
+            <label class="switch-toggle">
+              <input type="checkbox" id="toggleSmsActive" checked>
+              <span class="slider-round"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- NEW: SMS HISTORY LEDGER SIMULATOR -->
+        <div class="glass-card">
+          <h3>Outgoing SMS Queue</h3>
+          <div class="ledger-list" id="smsHistoryList">
+            <!-- Simulated SMS items populated via JS -->
+            <div style="font-size:12px; color:var(--text-dim); text-align:center; padding:10px 0;">No SMS alerts sent yet.</div>
+          </div>
+        </div>
+
+        <!-- Presets Configuration -->
+        <div class="glass-card">
+          <h3>Edit Quick Presets</h3>
+          <div class="preset-manager-list" id="presetManagerList">
+            <!-- Populated dynamically via JS -->
+          </div>
+          
+          <!-- NEW: ADD NEW CUSTOM PRESET FORM -->
+          <div style="margin-top:20px; padding-top:16px; border-top:1px dashed rgba(255,255,255,0.08);">
+            <h4 style="font-size:12px; font-weight:600; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px;">➕ Add New Canteen Snack</h4>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+              <div class="form-group" style="margin-bottom:0;">
+                <input type="text" id="newPresetName" placeholder="e.g. Burger 🍔" style="width:100%; background:rgba(7,5,20,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px; color:#fff; font-size:13px;">
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <div class="input-wrapper" style="padding-left:0;">
+                  <span class="currency-prefix" id="newPresetCurrencyPrefix" style="font-size:13px; left:10px;">₹</span>
+                  <input type="number" id="newPresetCost" placeholder="Price" style="width:100%; background:rgba(7,5,20,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 10px 10px 22px; color:#fff; font-size:13px;">
+                </div>
+              </div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1.2fr 0.8fr; gap:10px; align-items:center;">
+              <select id="newPresetCategory" style="padding:10px; font-size:12px;">
+                <option value="snacks">🥟 Snacks</option>
+                <option value="meals">🍲 Meals</option>
+                <option value="caffeine">☕ Caffeine</option>
+                <option value="drinks">🥤 Cool Drinks</option>
+                <option value="sweets">🍬 Sweets</option>
+              </select>
+              <button class="save-settings-btn" id="addNewPresetBtn" style="padding:10px; border-color:var(--neon-purple); font-size:12px;">Add Snack</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Developer Mode & Demo Tools -->
+        <div class="glass-card dev-card border-cyan">
+          <h3>Simulation Tools</h3>
+          <p>Quickly fill details to test the dashboard, statistics, and Parent Reports.</p>
+          <div class="dev-actions">
+            <button class="dev-btn demo-data-btn" id="loadDemoDataBtn">Load Sample Spends</button>
+            <button class="dev-btn reset-btn" id="clearAllDataBtn">Wipe All Data</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- STICKY BOTTOM TAB NAVIGATION -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-tab="dashboard">
+        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        <span>Home</span>
+      </button>
+      <button class="nav-item" data-tab="analytics">
+        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+        <span>Insights</span>
+      </button>
+      <button class="nav-item" data-tab="report">
+        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        <span>Parents</span>
+      </button>
+      <button class="nav-item" data-tab="settings">
+        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        <span>Setup</span>
+      </button>
+    </nav>
+
+    <!-- NEW: CHOOSE PAYMENT METHOD OVERLAY MODAL -->
+    <div class="logger-drawer-backdrop" id="paymentMethodBackdrop"></div>
+    <div class="logger-drawer border-cyan" id="paymentMethodDrawer" style="border-top-left-radius:24px; border-top-right-radius:24px; text-align:center; z-index: 10001;">
+      <div class="drawer-handle" style="background:var(--neon-cyan);"></div>
+      <h2 style="font-family:var(--font-display); font-weight:800; color:#fff; margin-bottom:4px;" id="paymentTitleName">Snack Order Selected</h2>
+      <div style="font-size:24px; font-weight:800; color:var(--neon-cyan); margin-bottom:18px;" id="paymentTitleCost">₹0.00</div>
+      
+      <div class="report-actions" style="grid-template-columns: 1fr; gap:12px;">
+        <button class="custom-add-btn" id="payByScannerBtn" style="background:linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-purple) 100%); box-shadow: 0 4px 15px rgba(0, 240, 255, 0.35); padding:16px;">
+          📸 PAY BY CANTEEN QR SCANNER
+        </button>
+        <button class="action-btn copy-btn" id="payByCardBtn" style="padding:14px; font-weight:700;">
+          DEDUCT SIMULATED CANTEEN CARD
+        </button>
+        <button class="action-btn reset-btn" id="payCancelBtn" style="padding:12px; font-weight:700; background:none; border:1px solid rgba(255,255,255,0.08); color:var(--text-muted);">
+          CANCEL ORDER
+        </button>
+      </div>
+    </div>
+
+    <!-- NEW: FULLSCREEN LIVE CAMERA QR SCANNER OVERLAY -->
+    <div class="logger-drawer-backdrop" id="qrScannerBackdrop" style="z-index: 10002;"></div>
+    <div class="logger-drawer" id="qrScannerDrawer" style="position:fixed; top:0; bottom:0; left:50%; transform:translate(-50%, 100%); width:100%; max-width:480px; height:100vh; max-height:100vh; border-radius:0; background:#000; z-index: 10003; padding:0; display:flex; flex-direction:column; overflow:hidden; border:none;">
+      
+      <!-- Video Feed Container -->
+      <div style="position:relative; flex:1; width:100%; height:100%; background:#05030a;">
+        <video id="scannerVideo" autoplay playsinline style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0;"></video>
+        
+        <!-- CYBERPUNK VIEWPORT OVERLAYS -->
+        <div class="scanner-curtain" style="position:absolute; top:0; left:0; right:0; bottom:0; box-shadow: inset 0 0 100px rgba(0,0,0,0.8); pointer-events:none;"></div>
+        
+        <!-- Square Glowing Scan Frame Target -->
+        <div class="scanner-frame" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:240px; height:240px; border:2px dashed var(--neon-cyan); border-radius:16px; box-shadow: 0 0 20px rgba(0,240,255,0.25); display:flex; align-items:center; justify-content:center;">
+          <div class="scanner-laser" style="width:100%; height:3px; background:linear-gradient(90deg, transparent, var(--neon-cyan), transparent); position:absolute; top:0; box-shadow: 0 0 12px var(--neon-cyan); animation: laser-sweep 2s linear infinite;"></div>
+          <span style="font-size:10px; font-family:var(--font-display); font-weight:700; color:rgba(0,240,255,0.7); position:absolute; bottom:-25px; text-transform:uppercase; letter-spacing:1px;">Align Canteen QR Code</span>
+        </div>
+
+        <!-- FALLBACK VIEWPORT CONTAINER (If webcam blocked / unavailable) -->
+        <div id="scannerCameraFallback" style="position:absolute; top:0; left:0; width:100%; height:100%; background:radial-gradient(circle, #100b2e 0%, #060412 100%); display:none; flex-direction:column; align-items:center; justify-content:center; padding:20px; text-align:center;">
+          <span style="font-size:48px; margin-bottom:12px; animation: logo-float 3s infinite;">📡</span>
+          <h3 style="font-family:var(--font-display); font-weight:700; color:#fff; margin-bottom:8px;">Camera Stream Mode</h3>
+          <p style="font-size:12px; color:var(--text-muted); max-width:260px; margin-bottom:20px;">
+            Simulating live camera feed. Scan the counter QR code box automatically!
+          </p>
+          <div style="width:160px; height:160px; border:2px dashed var(--neon-purple); border-radius:12px; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;">
+            <div style="width:120px; height:120px; background:repeating-concentric-gradient(circle, #ff007f 0px, #ff007f 8px, transparent 8px, transparent 16px); opacity:0.15; border-radius:8px;"></div>
+            <div class="scanner-laser" style="width:100%; height:2px; background:var(--neon-pink); position:absolute; top:0; animation: laser-sweep 2s linear infinite;"></div>
+          </div>
+        </div>
+        
+        <!-- Header HUD -->
+        <div style="position:absolute; top:30px; left:20px; right:20px; display:flex; justify-content:space-between; align-items:center; z-index:10;">
+          <div style="display:flex; align-items:center; gap:8px; background:rgba(0,0,0,0.6); padding:6px 12px; border-radius:20px; border:1px solid rgba(255,255,255,0.08);">
+            <span style="width:8px; height:8px; background:var(--neon-cyan); border-radius:50%; box-shadow:0 0 8px var(--neon-cyan); display:inline-block; animation: rotate-glow 2s linear infinite;"></span>
+            <span style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; color:#fff;" id="scannerStatusText">QR Counter Live</span>
+          </div>
+          <button id="closeScannerBtn" style="width:36px; height:36px; border-radius:50%; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.08); color:#fff; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; border:none; line-height:1;">✕</button>
+        </div>
+        
+        <!-- Simulated Canteen Scanned receipt success checkmark -->
+        <div id="scannerSuccessScreen" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(6,4,18,0.95); display:none; flex-direction:column; align-items:center; justify-content:center; z-index:20; animation: tab-fade-in 0.3s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;">
+          <div style="width:80px; height:80px; border-radius:50%; background:rgba(57,255,20,0.1); border:2px solid var(--neon-green); box-shadow: 0 0 20px rgba(57,255,20,0.3); display:flex; align-items:center; justify-content:center; margin-bottom:20px; animation: tab-fade-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;">
+            <svg viewBox="0 0 24 24" width="36" height="36" stroke="var(--neon-green)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <h2 style="font-family:var(--font-display); font-weight:800; color:#fff; margin-bottom:4px;">SCAN SUCCESSFUL</h2>
+          <div style="font-size:13px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:24px;">Paid to Canteen Merchant</div>
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:16px; padding:16px 24px; width:calc(100% - 80px); text-align:center;">
+            <div style="font-size:11px; text-transform:uppercase; color:var(--text-dim); margin-bottom:4px;">Transaction Amount</div>
+            <div style="font-size:32px; font-family:var(--font-display); font-weight:800; color:#fff;" id="scannerSuccessCost">₹0.00</div>
+          </div>
+        </div>
+
+        <!-- HUD Footer buttons -->
+        <div style="position:absolute; bottom:40px; left:20px; right:20px; display:flex; justify-content:center; z-index:10;">
+          <button id="triggerMockScanBtn" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:24px; padding:10px 20px; color:#fff; font-size:12px; font-weight:700; letter-spacing:0.5px; cursor:pointer; border:none;">
+            ⚡ SIMULATE COUNTER SCAN
+          </button>
+        </div>
+
+      </div>
+      
+    </div>
+
+    <!-- NEW: BUDGET BREACH POPUP TRIGGER DRAWER -->
+    <div class="logger-drawer-backdrop" id="smsAlertBackdrop"></div>
+    <div class="logger-drawer border-pink" id="smsAlertDrawer" style="border-top-left-radius:24px; border-top-right-radius:24px; text-align:center;">
+      <div class="drawer-handle" style="background:var(--neon-pink);"></div>
+      <span style="font-size:36px; display:block; margin-bottom:8px;">⚠️</span>
+      <h2 style="font-family:var(--font-display); font-weight:800; color:var(--neon-pink); margin-bottom:8px;">BUDGET LIMIT BREACHED!</h2>
+      <p style="font-size:13px; color:var(--text-muted); margin-bottom:18px;" id="smsAlertDetails">
+        Today's canteen spend has gone above your limit of ₹250.00.
+      </p>
+      
+      <!-- Graphic Mock SMS box -->
+      <div style="background:rgba(7,5,20,0.7); border:1px solid rgba(255,0,127,0.15); border-radius:12px; padding:16px; margin-bottom:20px; text-align:left;">
+        <span style="font-size:10px; font-weight:700; color:var(--neon-pink); text-transform:uppercase; display:block; margin-bottom:6px;">Simulated Outgoing SMS</span>
+        <div style="font-size:11px; color:#888; margin-bottom:4px;">To: <span id="smsAlertRecipientName" style="color:#fff; font-weight:600;">Mom & Dad</span> (<span id="smsAlertRecipientPhone" style="color:#00f0ff; font-weight:600;">+91 98765 43210</span>)</div>
+        <div style="font-size:11px; color:#888; margin-bottom:8px;">Bank Account: <span id="smsAlertBankDetails" style="color:#fff; font-weight:600;">State Bank A/C **9314</span></div>
+        <div style="font-size:13px; color:#fff; font-style:italic;" id="smsAlertBody">"ALERT: Canteen Daily Limit Breached..."</div>
+      </div>
+      
+      <div class="report-actions" style="grid-template-columns: 1fr;">
+        <button class="custom-add-btn" id="smsAlertActionBtn" style="background:linear-gradient(135deg, var(--neon-pink) 0%, var(--neon-purple) 100%); box-shadow: 0 4px 15px rgba(255, 0, 127, 0.4); margin-bottom:10px;">
+          📲 OPEN NATIVE SMS APP
+        </button>
+        <button class="action-btn copy-btn" id="smsAlertCloseBtn">
+          DIMISS ALERT
+        </button>
+      </div>
+    </div>
+
+    <!-- FULLSCREEN SLIDE-UP MODAL: CUSTOM ENTRY KEYPAD -->
+    <div class="logger-drawer-backdrop" id="loggerDrawerBackdrop"></div>
+    <div class="logger-drawer" id="loggerDrawer">
+      
+      <!-- Drawer Drag Handle Indicator -->
+      <div class="drawer-handle"></div>
+      
+      <div class="drawer-header">
+        <h2>Quick Entry Pad</h2>
+        <button class="close-drawer-btn" id="closeCustomLoggerBtn">✕</button>
+      </div>
+
+      <!-- Display Panel -->
+      <div class="entry-display">
+        <span class="entry-currency" id="keypadCurrency">₹</span>
+        <span class="entry-amount" id="keypadValue">0</span>
+      </div>
+
+      <!-- Category Select Slider Grid -->
+      <div class="keypad-category-group">
+        <span class="sub-label">Select Canteen Item Type:</span>
+        <div class="keypad-categories">
+          <label class="cat-pill active">
+            <input type="radio" name="keypad-cat" value="caffeine" checked>
+            <span>☕ Caffeine</span>
+          </label>
+          <label class="cat-pill">
+            <input type="radio" name="keypad-cat" value="snacks">
+            <span>🥟 Snacks</span>
+          </label>
+          <label class="cat-pill">
+            <input type="radio" name="keypad-cat" value="meals">
+            <span>🍲 Meal</span>
+          </label>
+          <label class="cat-pill">
+            <input type="radio" name="keypad-cat" value="drinks">
+            <span>🥤 Cool Drink</span>
+          </label>
+          <label class="cat-pill">
+            <input type="radio" name="keypad-cat" value="sweets">
+            <span>🍬 Sweet Tooth</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Description Input -->
+      <div class="keypad-notes-group">
+        <input type="text" id="keypadNote" placeholder="Add note (e.g. Maggie & Tea, Treat)..." maxlength="32">
+      </div>
+
+      <!-- Custom Vibrant Numeric Keypad -->
+      <div class="keypad-grid">
+        <button class="key-btn" data-key="1">1</button>
+        <button class="key-btn" data-key="2">2</button>
+        <button class="key-btn" data-key="3">3</button>
+        <button class="key-btn" data-key="4">4</button>
+        <button class="key-btn" data-key="5">5</button>
+        <button class="key-btn" data-key="6">6</button>
+        <button class="key-btn" data-key="7">7</button>
+        <button class="key-btn" data-key="8">8</button>
+        <button class="key-btn" data-key="9">9</button>
+        <button class="key-btn decimal" data-key=".">.</button>
+        <button class="key-btn" data-key="0">0</button>
+        <button class="key-btn delete-btn" data-key="backspace">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
+        </button>
+      </div>
+
+      <button class="keypad-submit-btn" id="keypadSubmitBtn">
+        LOG EXPENSE
+      </button>
+
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div class="toast-container" id="toastContainer"></div>
+  </div>
+
+  <!-- Main JavaScript File -->
+  <script src="app.js"></script>
+</body>
+</html>
